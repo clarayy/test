@@ -18,7 +18,8 @@ def read_graphfile(datadir, dataname, max_nodes=None):
     # index of graphs that a given node belongs to
     graph_indic={}
     with open(filename_graph_indic) as f:
-        i=1
+        #i=1
+        i=0
         for line in f:
             line=line.strip("\n")
             graph_indic[i]=int(line)
@@ -30,7 +31,8 @@ def read_graphfile(datadir, dataname, max_nodes=None):
         with open(filename_nodes) as f:
             for line in f:
                 line=line.strip("\n")
-                node_labels+=[int(line) - 1]
+                #node_labels+=[int(line) - 1]
+                node_labels += [int(line)]
         num_unique_node_labels = max(node_labels) + 1
     except IOError:
         print('No node labels')
@@ -80,8 +82,20 @@ def read_graphfile(datadir, dataname, max_nodes=None):
             index_graph[graph_indic[e0]]+=[e0,e1]
             num_edges += 1
     for k in index_graph.keys():
-        index_graph[k]=[u-1 for u in set(index_graph[k])]
-
+        #index_graph[k]=[u-1 for u in set(index_graph[k])]
+        index_graph[k] = [u for u in set(index_graph[k])]
+    filename_classlabel = prefix + '_graph_labels_class.txt'
+    graph_classlabel =[]
+    with open(filename_classlabel,'r') as f1:
+        for line in f1:
+            graph_classlabel.append(int(line.strip('\n')))
+    print('graph_labels_class')
+    filename_center = prefix + '_jordancenter.txt'   #随机选
+    graph_center =[]
+    with open(filename_center,'r') as f:
+        for line in f:
+            graph_center.append(int(line.strip('\n')))
+    print('jordancenter')
     graphs=[]
     for i in range(1,1+len(adj_list)):
         # indexed from 1 here
@@ -91,10 +105,14 @@ def read_graphfile(datadir, dataname, max_nodes=None):
       
         # add features and labels
         G.graph['label'] = graph_labels[i-1]
+        G.graph['classlabel'] = graph_classlabel[i - 1]
+        # add features and labels
+        G.graph['label'] = graph_labels[i-1]
         for u in util.node_iter(G):
             if len(node_labels) > 0:
                 node_label_one_hot = [0] * num_unique_node_labels
-                node_label = node_labels[u-1]
+                #node_label = node_labels[u-1]
+                node_label = node_labels[u]
                 node_label_one_hot[node_label] = 1
                 util.node_dict(G)[u]['label'] = node_label_one_hot
             if len(node_attrs) > 0:
